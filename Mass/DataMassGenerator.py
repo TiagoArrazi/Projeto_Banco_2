@@ -1,7 +1,5 @@
 from random import randint, choice
-from pprint import pprint
-from json import dump, dumps
-from subprocess import Popen
+from json import dump
 from csv import writer
 
 
@@ -25,24 +23,24 @@ alturas_carroceria = {'SEDAN': 1500,
                       'PICAPE': 1900}
 
 larguras_carroceria = {'SEDAN': 1690,
-                      'COUPÉ': 1660,
-                      'HATCH': 1800,
-                      'SUV': 1820,
-                      'PICAPE': 1900}
+                       'COUPÉ': 1660,
+                       'HATCH': 1800,
+                       'SUV': 1820,
+                       'PICAPE': 1900}
 
-blindagem_carroceria = [0,1]
+blindagem_carroceria = ['SIM', 'NÃO']
 
 cor_carroceria = ['VERMELHO',
-         'VERDE',
-         'AMARELO',
-         'AZUL',
-         'PRATA',
-         'PRETO',
-         'BRANCO']
+                  'VERDE',
+                  'AMARELO',
+                  'AZUL',
+                  'PRATA',
+                  'PRETO',
+                  'BRANCO']
 
-qtd_farol = [4,6,8,12]
+qtd_farol = [4, 6, 8, 12]
 
-mod_farol = ['LED','XENON','NORMAL']
+mod_farol = ['LED', 'XENON', 'NORMAL']
 
 # =========== ELETRICA ===========
 
@@ -58,7 +56,7 @@ qtd_sensores = {'SEDAN': 6,
                 'SUV': 10,
                 'PICAPE': 12}
 
-inj_eletronica = [0,1]
+inj_eletronica = ['SIM', 'NÃO']
 
 bateria = {'SEDAN': '50aH',
            'COUPÉ': '75aH',
@@ -68,7 +66,7 @@ bateria = {'SEDAN': '50aH',
 
 # =========== INTERIOR ===========
 
-volantes = ['VOLMOD0001','VOLMOD0002']
+volantes = ['VOLMOD0001', 'VOLMOD0002']
 
 painel = {'SEDAN': 'PAINSEDAN20190001',
           'COUPÉ': 'PAINCOUPE20190001',
@@ -76,7 +74,7 @@ painel = {'SEDAN': 'PAINSEDAN20190001',
           'SUV': 'PAINSUV20190001',
           'PICAPE': 'PAINPICAPE20190001'}
 
-bancos = ['COURO','TECIDO']
+bancos = ['COURO', 'TECIDO']
 
 mod_mostradores = {'SEDAN': 'MOSTRSEDAN20190001',
                    'COUPÉ': 'MOSTRCOUPE20190001',
@@ -85,10 +83,10 @@ mod_mostradores = {'SEDAN': 'MOSTRSEDAN20190001',
                    'PICAPE': 'MOSTRPICAPE20190001'}
 
 mod_comp_bordo = {'SEDAN': 'COMPBORSEDAN20190001',
-                   'COUPÉ': 'COMPBORCOUPE20190001',
-                   'HATCH': 'COMPBORHATCH20190001',
-                   'SUV': 'COMPBORSUV20190001',
-                   'PICAPE': 'COMPBORPICAPE20190001'}
+                  'COUPÉ': 'COMPBORCOUPE20190001',
+                  'HATCH': 'COMPBORHATCH20190001',
+                  'SUV': 'COMPBORSUV20190001',
+                  'PICAPE': 'COMPBORPICAPE20190001'}
 
 mod_sist_ac = {'SEDAN': 'SISTACSEDAN20190001',
                'COUPÉ': 'SISTACCOUPE20190001',
@@ -162,11 +160,11 @@ tala_pneu = {'SEDAN': 205,
              'SUV': 225,
              'PICAPE': 265}
 
-cor_roda = ['PRETO','PRATA']
+cor_roda = ['PRETO', 'PRATA']
 
 # =========== TRANSMISSAO ===========
 
-tipo_transmissao = ['MANUAL','AUTOMATICO','AUTOMATIZADO']
+tipo_transmissao = ['MANUAL', 'AUTOMATICO', 'AUTOMATIZADO']
 
 num_marchas = {'SEDAN': 7,
                'COUPÉ': 6,
@@ -188,20 +186,23 @@ modelo_vidro = {'SEDAN': 'VIDROSEDAN20190001',
                 'SUV': 'VIDROSUV20190001',
                 'PICAPE': 'VIDROPICAPE20190001'}
 
-blindagem_vidro = [0,1]
+blindagem_vidro = ['SIM', 'NÃO']
 
-opacidade = ['G5','G20','G35','G50']
+opacidade = ['G5', 'G20', 'G35', 'G50']
 
 # =========== STATUS ===========
 
-status = ['EM PRODUÇÃO','NÃO ESTÁ EM PRODUÇÃO']
+status = ['EM PRODUÇÃO', 'NÃO ESTÁ EM PRODUÇÃO']
 
 
-# =========== INSERTS DATAMARTS===========
+# =========== DADOS DATAMARTS===========
 
-with open('datamarts.sql', 'w+') as datamart:
 
-    # CARROCERIA
+# DATAMART CARROCERIA
+with open('MySQL/Datamarts/datamart_carroceria.csv', 'w+') as datamart_carroceria:
+
+    datamart_writer = writer(datamart_carroceria, delimiter=';')
+
     carroceria_mongo = []
     for modelo in tipo_carroceria:
         for material in material_carroceria:
@@ -210,8 +211,17 @@ with open('datamarts.sql', 'w+') as datamart:
                     for q_farol in qtd_farol:
                         for m_farol in mod_farol:
 
-                            rndStatus = status[randint(0,1)];
-                            datamart.write(f"INSERT INTO CARROCERIA (MATERIAL,TIPO,ALTURA,LARGURA,BLINDAGEM,COR,QTD_FAROL,MOD_FAROL,STATUS) VALUES ('{material}','{modelo}',{alturas_carroceria[modelo]},{larguras_carroceria[modelo]},{blindagem},'{cor}',{q_farol},'{m_farol}','{rndStatus}');\n")
+                            rnd_status = status[randint(0, 1)]
+
+                            datamart_writer.writerow([material,
+                                                      modelo,
+                                                      alturas_carroceria[modelo],
+                                                      larguras_carroceria[modelo],
+                                                      blindagem,
+                                                      cor,
+                                                      q_farol,
+                                                      m_farol,
+                                                      rnd_status])
 
                             carroceria_mongo.append({
                                 "material": material,
@@ -222,35 +232,55 @@ with open('datamarts.sql', 'w+') as datamart:
                                 "cor": cor,
                                 "qtd_farol": q_farol,
                                 "mod_farol": m_farol,
-                                "status": rndStatus
+                                "status": rnd_status
                             })
 
 
-    # ELETRICA
+# DATAMART ELETRICA
+with open('MySQL/Datamarts/datamart_eletrica.csv', 'w+') as datamart_eletrica:
+
+    datamart_writer = writer(datamart_eletrica, delimiter=';')
+
     eletrica_mongo = []
     for modelo in tipo_carroceria:
         for inj in inj_eletronica:
 
-            rndStatus = status[randint(0,1)]
-            datamart.write(f"INSERT INTO ELETRICA (MOD_CHICOTE,QTD_SENSORES,INJ_ELETRONICA,BATERIA,STATUS) VALUES ('{mod_chicote[modelo]}',{qtd_sensores[modelo]},{inj},'{bateria[modelo]}','{rndStatus}');\n")
+            rnd_status = status[randint(0, 1)]
+
+            datamart_writer.writerow([mod_chicote[modelo],
+                                      qtd_sensores[modelo],
+                                      inj,
+                                      bateria[modelo],
+                                      rnd_status])
 
             eletrica_mongo.append({
                     "mod_chicote": mod_chicote[modelo],
                     "qtd_sensores": qtd_sensores[modelo],
                     "inj_eletronica": inj,
                     "bateria": bateria[modelo],
-                    "status": rndStatus
+                    "status": rnd_status
             })
 
 
-    # INTERIOR
+# DATAMART INTERIOR
+with open('MySQL/Datamarts/datamart_interior.csv', 'w+') as datamart_interior:
+
+    datamart_writer = writer(datamart_interior, delimiter=';')
+
     interior_mongo = []
     for modelo in tipo_carroceria:
         for volante in volantes:
             for banco in bancos:
 
-                rndStatus = status[randint(0,1)]
-                datamart.write(f"INSERT INTO INTERIOR (VOLANTE,PAINEL,BANCOS,MOD_MOSTRADORES,MOD_COMP_BORDO,MOD_SIST_AC,STATUS) VALUES ('{volante}','{painel[modelo]}','{banco}','{mod_mostradores[modelo]}','{mod_comp_bordo[modelo]}','{mod_sist_ac[modelo]}','{rndStatus}');\n")
+                rnd_status = status[randint(0, 1)]
+
+                datamart_writer.writerow([volante,
+                                          painel[modelo],
+                                          banco,
+                                          mod_mostradores[modelo],
+                                          mod_comp_bordo[modelo],
+                                          mod_sist_ac[modelo],
+                                          rnd_status])
 
                 interior_mongo.append({
                         "volante": volante,
@@ -259,15 +289,29 @@ with open('datamarts.sql', 'w+') as datamart:
                         "mod_mostradores": mod_mostradores[modelo],
                         "mod_comp_bordo": mod_comp_bordo[modelo],
                         "mod_sist_ac": mod_sist_ac[modelo],
-                        "status": rndStatus
+                        "status": rnd_status
                 })
 
-    # MOTOR
+
+# DATAMART MOTOR
+with open('MySQL/Datamarts/datamart_motor.csv', 'w+') as datamart_motor:
+
+    datamart_writer = writer(datamart_motor, delimiter=';')
+
     motor_mongo = []
     for modelo in tipo_carroceria:
 
-        rndStatus = status[randint(0,1)]
-        datamart.write(f"INSERT INTO MOTOR (TIPO,QTD_CILINDROS,QTD_POTENCIA,QTD_LITRAGEM,QTD_VALVULAS,QTD_TORQUE,SOBREALIM,TIPO_ESCAPE,STATUS) VALUES ('{tipo_motor[modelo]}',{qtd_cilindros[modelo]},{qtd_potencia[modelo]},'{qtd_litragem[modelo]}',{qtd_valvulas[modelo]},{qtd_torque[modelo]},'{sobrealim[modelo]}','{escape[modelo]}','{rndStatus}');\n")
+        rnd_status = status[randint(0, 1)]
+
+        datamart_writer.writerow([tipo_motor[modelo],
+                                  qtd_cilindros[modelo],
+                                  qtd_potencia[modelo],
+                                  qtd_litragem[modelo],
+                                  qtd_valvulas[modelo],
+                                  qtd_torque[modelo],
+                                  sobrealim[modelo],
+                                  escape[modelo],
+                                  rnd_status])
 
         motor_mongo.append({
                 "tipo": tipo_motor[modelo],
@@ -278,64 +322,95 @@ with open('datamarts.sql', 'w+') as datamart:
                 "qtd_torque": qtd_torque[modelo],
                 "sobrealim": sobrealim[modelo],
                 "tipo_escape": escape[modelo],
-                "status": rndStatus
+                "status": rnd_status
         })
 
-    # RODAS
+
+# DATAMART RODAS
+with open('MySQL/Datamarts/datamart_rodas.csv', 'w+') as datamart_rodas:
+
+    datamart_writer = writer(datamart_rodas, delimiter=';')
+
     rodas_mongo = []
     for modelo in tipo_carroceria:
         for cor in cor_roda:
 
-            rndStatus = status[randint(0,1)]
-            datamart.write(f"INSERT INTO RODAS (ARO,TALA_PNEU,COR,STATUS) VALUES ({aro[modelo]},{tala_pneu[modelo]},'{cor}','{rndStatus}');\n")
+            rnd_status = status[randint(0, 1)]
+
+            datamart_writer.writerow([aro[modelo],
+                                      tala_pneu[modelo],
+                                      cor,
+                                      rnd_status])
 
             rodas_mongo.append({
                     "aro": aro[modelo],
                     "tala": tala_pneu[modelo],
                     "cor": cor,
-                    "status": rndStatus
+                    "status": rnd_status
             })
 
-    # TRANSMISSAO
+
+# DATAMART TRANSMISSAO
+with open('MySQL/Datamarts/datamart_transmissao.csv', 'w+') as datamart_transmissao:
+
+    datamart_writer = writer(datamart_transmissao, delimiter=';')
+
     transmissao_mongo = []
     for modelo in tipo_carroceria:
         for transmissao in tipo_transmissao:
 
-            rndStatus = status[randint(0,1)]
-            datamart.write(f"INSERT INTO TRANSMISSAO (TIPO,NUM_MARCHAS,TRACAO,STATUS) VALUES ('{transmissao}',{num_marchas[modelo]},'{tracao[modelo]}','{rndStatus}');\n")
+            rnd_status = status[randint(0, 1)]
+
+            datamart_writer.writerow([transmissao,
+                                      num_marchas[modelo],
+                                      tracao[modelo],
+                                      rnd_status])
 
             transmissao_mongo.append({
                     "tipo": transmissao,
                     "num_marchas": num_marchas[modelo],
                     "tracao": tracao[modelo],
-                    "status": rndStatus
+                    "status": rnd_status
             })
 
-    # VIDROS
+
+# DATAMART VIDROS
+with open('MySQL/Datamarts/datamart_vidros.csv', 'w+') as datamart_vidros:
+
+    datamart_writer = writer(datamart_vidros, delimiter=';')
+
     vidros_mongo = []
     for modelo in tipo_carroceria:
         for opac in opacidade:
             for blindagem in blindagem_vidro:
 
-                rndStatus = status[randint(0,1)]
-                datamart.write(f"INSERT INTO VIDROS (MODELO,BLINDAGEM,OPACIDADE,STATUS) VALUES ('{modelo_vidro[modelo]}',{blindagem},'{opac}','{rndStatus}');\n")
+                rnd_status = status[randint(0, 1)]
+
+                datamart_writer.writerow([modelo_vidro[modelo],
+                                          blindagem,
+                                          opac,
+                                          rnd_status])
 
                 vidros_mongo.append({
                         "modelo": modelo_vidro[modelo],
                         "blindagem": blindagem,
                         "opacidade": opac,
-                        "status": rndStatus
+                        "status": rnd_status
                 })
 
 
 # =========== INSERTS TABELA DE FATOS ===========
 
-carrocerias_sedan = list(range(1,673))
-carrocerias_coupe = list(range(673,1345))
-carrocerias_hatch = list(range(1345,2017))
-carrocerias_suv = list(range(2017,2689))
-carrocerias_picape = list(range(2689,3361))
-lista_modelos = [carrocerias_sedan,carrocerias_coupe,carrocerias_hatch,carrocerias_suv,carrocerias_picape]
+carrocerias_sedan = list(range(1, 673))
+carrocerias_coupe = list(range(673, 1345))
+carrocerias_hatch = list(range(1345, 2017))
+carrocerias_suv = list(range(2017, 2689))
+carrocerias_picape = list(range(2689, 3361))
+lista_modelos = [carrocerias_sedan,
+                 carrocerias_coupe,
+                 carrocerias_hatch,
+                 carrocerias_suv,
+                 carrocerias_picape]
 
 eletrica_sedan = [1, 2]
 eletrica_coupe = [3, 4]
@@ -373,13 +448,15 @@ vidro_hatch = list(range(17, 25))
 vidro_suv = list(range(25, 33))
 vidro_picape = list(range(33, 41))
 
+
 document_list = []
-with open('mass_tabela_fatos.csv', 'w+') as mass:
-    with open('mass_mongol.json', 'w+') as mass_mongo:
 
-        mass_writer = writer(mass, delimiter=';')
+with open('MySQL/Facts_Table/mass_tabela_fatos.csv', 'w+') as mass_mysql:
+    with open('MongoDB/MongoDB_Mass/mass_mongo.json', 'w+') as mass_mongo:
 
-        for i in range(2500000):
+        mass_writer = writer(mass_mysql, delimiter=';')
+
+        for i in range(1000):
             modelo = choice(choice(lista_modelos))
 
             if modelo in carrocerias_sedan:
