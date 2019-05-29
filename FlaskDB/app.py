@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymysql import connect
-from flask import Flask, make_response
-from json import dumps
+from flask import Flask
+from json import dump
 import time
 
 app = Flask(__name__)  # flask application
@@ -55,61 +55,33 @@ def get_from_mysql():
 @app.route('/mongodb')
 def get_from_mongodb():
 
-    color_match = {
-            "$match": {
-                "$or": [
-                    {"carroceria.cor": "VERMELHO"},
-                    {"carroceria.cor": "PRATE"},
-                    {"carroceria.cor": "AZUL"},
-                    {"carroceria.cor": "PRETO"}
-                ]
-            }
-        }
-    # limit = {"$limit": 10}
-    #
-    # sort = {
-    #     "$sort": {
-    #         "modelo": 1
-    #     }
-    # }
-    #
-    # project = {
-    #
-    #     "$project": {
-    #         "_id": 0,
-    #         "MODELO CARRO": "$modelo",
-    #         "TIPO CARROCERIA": "$carroceria.tipo",
-    #         "STATUS CARROCERIA": "$carroceria.status",
-    #         "MODELO VOLANTE": "$interior.volante",
-    #         "TIPO BANCO": "$interior.bancos"
-    #     }
-    # }
+    cor_match = {"$match": {"$or": [
+                {"carroceria.cor": "VERMELHO"},
+                {"carroceria.cor": "PRATE"},
+                {"carroceria.cor": "AZUL"},
+                {"carroceria.cor": "PRETO"}]}}
 
-    start_find = time.time()
-    # mongo_cursor = carros.aggregate([color_match])
-    mongo_cursor = carros.find()
-    end_find = time.time()
+    sort = {"$sort": {"modelo": 1}}
+    limit = {"$limit": 10000}
 
-    start_count = time.time()
-    count = len(list(mongo_cursor))
-    end_count = time.time()
+    project = {"$project": {
+        "_id": 0,
+        "MODELO CARRO": "$modelo",
+        "TIPO CARROCERIA": "$carroceria.tipo",
+        "STATUS CARROCERIA": "$carroceria.status",
+        "MODELO VOLANTE": "$interior.volante",
+        "TIPO BANCO": "$interior.bancos"}}
 
-    start_write = time.time()
-    with open('mongo_response', 'w+') as mongo_resp:
-        for doc in list(mongo_cursor):
-            mongo_resp.write(dumps(doc, default=str))
-    end_write = time.time()
+    start = time.time()
 
-    response = make_response("""< QUERY PROCESSED > --- {} documents returned in {} seconds
-                    --- {} seconds to count documents
-                    --- {} seconds to write in file""".format(count,
-                                                              end_find - start_find,
-                                                              end_count - start_count,
-                                                              end_write - start_write)
-                             )
+    results = list(carros.aggregate([cor_match, sort, project]))
 
-    response.headers["content-type"] = "text/plain"
-    return response
+    end = time.time()
+
+    with open('mongodb_response.json', 'w+') as mongo_resp:
+        dump(list(results), mongo_resp)
+
+    return '< QUERY PROCESSED > --- {} documents in {} seconds'.format(len(results), end - start)
 
 
 if __name__ == '__main__':
