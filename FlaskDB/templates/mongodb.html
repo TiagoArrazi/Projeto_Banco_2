@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<title>Resultado Query MongoDB</title>
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+
+<body>
+<h4>QUERY PROCESSED: "{{carrosCount}}" lines counted in "{{time}}"</h4>
+<table>
+    <tr>
+        <th>Modelo Carro</th>
+        <th>Tipo Carroceria</th>
+        <th>Status Carroceria</th>
+    </tr>
+    {% for carro in carrosHtml %}
+    <tr>
+        <td>"{{carro["MODELO CARRO"]}}"</td>
+        <td>"{{carro["TIPO CARROCERIA"]}}"</td>
+        <td>"{{carro["STATUS CARROCERIA"]}}"</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
