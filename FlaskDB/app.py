@@ -16,8 +16,7 @@ def get_from_mysql():
         query = """SELECT C.MODELO AS 'MODELO CARRO',CRC.TIPO AS 'TIPO CARROCERIA',CRC.STATUS AS 'STATUS CARROCERIA'
                    FROM CARRO AS C
                    INNER JOIN CARROCERIA AS CRC
-                   WHERE (CRC.COR = 'VERMELHO' OR CRC.COR = 'PRATA') AND CRC.ID_CARROCERIA = C.ID_CARROCERIA
-                   ORDER BY C.MODELO;"""
+                   WHERE (CRC.COR = 'VERMELHO' OR CRC.COR = 'PRATA') AND CRC.ID_CARROCERIA = C.ID_CARROCERIA;"""
 
         cursor = mysql_conn.cursor()
 
@@ -85,14 +84,17 @@ def get_from_mongodb():
         "STATUS CARROCERIA": "$carroceria.status"}}
 
     start = time.time()
-    cursor = carros.aggregate([cor_match, sort, project])
+    cursor = carros.aggregate([cor_match, project])
     end = time.time()
     tempo = end - start
 
-    carros_html = carros.aggregate([cor_match, {"$limit": 10}, sort, project])
+    carros_html = carros.aggregate([cor_match, {"$limit": 30}, sort, project])
     carros_count_doc = db.command({"aggregate": "carros",
                                    "pipeline": [cor_match, sort, count],
                                    "cursor": {}})
+
+    with open('mongodb_response.json', 'w+') as mongo_resp:
+        dump(list(cursor), mongo_resp)
 
     return render_template('mongodb.html',
                            carrosHtml=list(carros_html),
